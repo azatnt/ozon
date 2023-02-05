@@ -5,12 +5,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    restart: always
     volumes:
       - static_volume:/code/static
-      - /u01/reports:/u01/reports
     expose:
       - 8000
+
   nginx:
     build:
       context: ./nginx
@@ -18,7 +19,6 @@ services:
     command: ["nginx", "-g", "daemon off;"]
     volumes:
       - static_volume:/code/static
-      - /u01/reports:/u01/reports
     ports:
       - 8085:8085
     depends_on:
@@ -27,13 +27,26 @@ services:
   redis:
     image: redis:alpine
 
+  db:
+    image: 'postgres:latest'
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: shop_product
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: supersecretpassword
+    ports:
+      - "5432:5432"
+
+
   celery:
     build:
       context: .
     command: celery -A config worker -l info
     volumes:
       - static_volume:/code/static
-      - /u01/reports:/u01/reports
     depends_on:
       - redis
 
@@ -43,10 +56,9 @@ services:
     command: celery -A config beat -l info
     volumes:
       - static_volume:/code/static
-      - /u01/reports:/u01/reports
     depends_on:
       - redis
 
 volumes:
+  pgdata:
   static_volume:
-  reports:

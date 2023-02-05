@@ -80,8 +80,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-CELERY_BROKER_URL = "redis://localhost:6379",
-CELERY_RESULT_BACKEND = "redis://localhost:6379"
+CELERY_BROKER_URL = "redis://redis:6379",
+CELERY_RESULT_BACKEND = "redis://redis:6379"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
