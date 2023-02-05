@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  ozon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - static_volume:/code/static
+      - /u01/reports:/u01/reports
+    expose:
+      - 8000
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    command: ["nginx", "-g", "daemon off;"]
+    volumes:
+      - static_volume:/code/static
+      - /u01/reports:/u01/reports
+    ports:
+      - 8085:8085
+    depends_on:
+      - ozon
+
+  redis:
+    image: redis:alpine
+
+  celery:
+    build:
+      context: .
+    command: celery -A config worker -l info
+    volumes:
+      - static_volume:/code/static
+      - /u01/reports:/u01/reports
+    depends_on:
+      - redis
+
+  celery-beat:
+    build:
+      context: .
+    command: celery -A config beat -l info
+    volumes:
+      - static_volume:/code/static
+      - /u01/reports:/u01/reports
+    depends_on:
+      - redis
+
+volumes:
+  static_volume:
+  reports:
