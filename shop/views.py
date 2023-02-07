@@ -39,3 +39,11 @@ class ArchivedProducts(APIView):
         except EmptyPage:
             products = paginator.page(paginator.num_pages)
         return render(request, 'archive.html', context={"products": products})
+
+
+class RemoveFromArchive(APIView):
+    def post(self, request, id):
+        product = Product.objects.get(id=id)
+        product.is_archive = False
+        product.save()
+        return redirect('archive_list_url')

@@ -4,5 +4,6 @@ from .views import *
 urlpatterns = [
     path('', GetProductList.as_view(), name='get_product_by_status_url'),
     path('archive_product/<int:id>', ArchiveProduct.as_view(), name='archive_product_url'),
-    path('archived_products', ArchivedProducts.as_view(), name='archive_list_url')
+    path('archived_products', ArchivedProducts.as_view(), name='archive_list_url'),
+    path('remove_from_archive/<int:id>', RemoveFromArchive.as_view(), name='remove_from_archive_url')
 ]
