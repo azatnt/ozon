@@ -145,10 +145,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CELERY_BEAT_SCHEDULE = {
     "sample_task1": {
         "task": "config.tasks.reports_daily_awaiting",
-        "schedule": crontab(minute='*/20'),
+        "schedule": crontab(minute='*/1'),
     },
     "sample_task2": {
         "task": "config.tasks.reports_daily_packaging",
-        "schedule": crontab(minute='*/20'),
+        "schedule": crontab(minute='*/1'),
     },
 }
