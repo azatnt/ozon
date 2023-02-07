@@ -3,6 +3,7 @@ from django.db import models
 
 class Product(models.Model):
     name = models.CharField(max_length=500)
+    posting_number = models.CharField(max_length=250, blank=True, null=True)
     quantity = models.IntegerField()
     date = models.DateTimeField()
     artikul = models.CharField(max_length=300)

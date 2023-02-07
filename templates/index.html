@@ -26,6 +26,7 @@
                         <thead class="table-dark">
                         <tr>
                             <th>Дата</th>
+                            <th>Номер заказа</th>
                             <th>Артикул</th>
                             <th>Наименование</th>
                             <th>Кол-во</th>
@@ -37,6 +38,7 @@
                         {% for product in products %}
                             <tr>
                                 <td>{{ product.date|date:"d.m.Y"|default_if_none:'' }}</td>
+                                <td>{{ product.posting_number }}</td>
                                 <td>{{ product.artikul }}</td>
                                 <td>{{ product.name }}</td>
                                 <td>{{ product.quantity }}</td>
