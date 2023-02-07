@@ -7,7 +7,7 @@ from shop.models import Product
 
 class GetProductList(APIView):
     def get(self, request, *args, **kwargs):
-        queryset = Product.objects.filter(is_archive=False).order_by('-created_at')
+        queryset = Product.objects.filter(is_archive=False).order_by('-date')
         page = request.GET.get('page', 1)
         paginator = Paginator(queryset, 10)
         try:

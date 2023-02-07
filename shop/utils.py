@@ -12,7 +12,5 @@ def perform_data_from_api(data):
                 values['artikul'] = j['offer_id']
                 values['name'] = j['name']
                 values['quantity'] = j['quantity']
-                new_product = Product.objects.filter(name=values['name'], artikul=values['artikul'])
-                if not new_product.exists():
-                    Product.objects.create(**values)
+                Product.objects.create(**values)
                 values = {}
