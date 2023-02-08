@@ -1,4 +1,4 @@
-from shop.models import Product
+from shop.models import *
 
 
 def perform_data_from_api(data):
@@ -15,5 +15,11 @@ def perform_data_from_api(data):
                 values['quantity'] = j['quantity']
                 product = Product.objects.filter(posting_number=values['posting_number'])
                 if not product.exists():
-                    Product.objects.create(**values)
+                    artikul = values['artikul'][:6]
+                    article_number = ArticleNumber.objects.filter(name__startswith=artikul)
+                    if article_number.exists():
+                        article_number = article_number.first()
+                        warehouse = Warehouse.objects.get(id=article_number.warehouse.id)
+                        values['warehouse'] = warehouse
+                        Product.objects.create(**values)
                 values = {}
