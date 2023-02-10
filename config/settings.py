@@ -79,7 +79,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-CSRF_TRUSTED_ORIGINS = ['*']
+CSRF_TRUSTED_ORIGINS = ['http://185.146.3.147:8085']
 
 CELERY_BROKER_URL = "redis://redis:6379",
 CELERY_RESULT_BACKEND = "redis://redis:6379"
