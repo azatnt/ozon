@@ -1,3 +1,6 @@
+import datetime
+
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.datastructures import MultiValueDictKeyError
 from rest_framework.views import APIView
@@ -19,7 +22,11 @@ class CheckWarehouse(APIView):
     def post(self, request, *args, **kwargs):
         param = request.POST.get('warehouse')
         warehouse = Warehouse.objects.filter(name=param).first()
-        if warehouse:
+        if warehouse and warehouse.id == 4:
+            return redirect('products_list_for_driver', id=warehouse.id, warehouse_id=1)
+        elif warehouse and warehouse.id == 5:
+            return redirect('admin_urls', id=warehouse.id, warehouse_id=1)
+        elif warehouse:
             return redirect('get_products_url', id=warehouse.id)
         messages.error(request, 'Склад не существует!')
         return redirect('home_urls')
@@ -30,6 +37,7 @@ class GetProductList(APIView):
         queryset = Product.objects.filter(is_archive=False).filter(warehouse_id=id).select_related('warehouse').order_by('-date')
         warehouse_id = id
         page = request.GET.get('page', 1)
+        warehouses = Warehouse.objects.exclude(id=4)
         paginator = Paginator(queryset, 10)
         try:
             products = paginator.page(page)
@@ -37,7 +45,8 @@ class GetProductList(APIView):
             products = paginator.page(1)
         except EmptyPage:
             products = paginator.page(paginator.num_pages)
-        return render(request, "index.html", context={"products": products, "warehouse_id": warehouse_id})
+        return render(request, "index.html", context={"products": products, "warehouse_id": warehouse_id,
+                                                      "warehouses": warehouses})
 
 
 class ArchiveProduct(APIView):
@@ -45,7 +54,8 @@ class ArchiveProduct(APIView):
         product = Product.objects.get(id=id)
         product.is_archive = True
         product.save()
-        return redirect('get_products_url', id=warehouse_id)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        # return redirect('get_products_url', id=warehouse_id)
 
 
 class ArchivedProducts(APIView):
@@ -68,7 +78,7 @@ class RemoveFromArchive(APIView):
         product = Product.objects.get(id=id)
         product.is_archive = False
         product.save()
-        return redirect('archive_list_url', id=warehouse_id)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 class UploadArticles(APIView):
@@ -95,6 +105,71 @@ class UploadArticles(APIView):
         return redirect('home_urls')
 
 
+class ProductsForDriver(APIView):
+    def get(self, request, id, warehouse_id):
+        warehouses = Warehouse.objects.exclude(id=id)
+        products = Product.objects.filter(warehouse_id=warehouse_id).select_related('warehouse').order_by('date')
+        page = request.GET.get('page', 1)
+        paginator = Paginator(products, 10)
+        try:
+            products = paginator.page(page)
+        except PageNotAnInteger:
+            products = paginator.page(1)
+        except EmptyPage:
+            products = paginator.page(paginator.num_pages)
+        return render(request, 'index.html', context={'products': products, 'warehouse_id': id, 'warehouses': warehouses})
 
 
+class Admin(APIView):
+    def get(self, request, id, warehouse_id):
+        warehouses = Warehouse.objects.exclude(id__in=[4, 5])
+        warehouse = Warehouse.objects.get(id=warehouse_id)
+        products = Product.objects.filter(warehouse_id=warehouse_id, is_archive=False).select_related('warehouse').order_by('-date')
+        page = request.GET.get('page', 1)
+        paginator = Paginator(products, 10)
+        try:
+            products = paginator.page(page)
+        except PageNotAnInteger:
+            products = paginator.page(1)
+        except EmptyPage:
+            products = paginator.page(paginator.num_pages)
+        return render(request, 'admin.html', context={'warehouses': warehouses, 'admin_id': id, 'warehouse': warehouse,
+                                                      'products': products})
+
+
+class AdminArchive(APIView):
+    def get(self, request, id, warehouse_id):
+        warehouses = Warehouse.objects.exclude(id__in=[4, 5])
+        warehouse = Warehouse.objects.get(id=warehouse_id)
+        products = Product.objects.filter(is_archive=True).filter(warehouse_id=warehouse_id).select_related('warehouse').order_by('-date')
+        page = request.GET.get('page', 1)
+        paginator = Paginator(products, 10)
+        try:
+            products = paginator.page(page)
+        except PageNotAnInteger:
+            products = paginator.page(1)
+        except EmptyPage:
+            products = paginator.page(paginator.num_pages)
+        return render(request, 'admin_archive.html', context={'warehouses': warehouses, 'admin_id': id, 'warehouse': warehouse,
+                                                              'products': products})
+
+
+class ExportToExcel(APIView):
+    def post(self, request, id):
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        params = {}
+        today = datetime.datetime.today()
+        if start_date is not None and end_date is not None:
+            params['date__gte'] = start_date
+            params['date__lte'] = end_date
+        elif start_date is not None and end_date is None:
+            params['date__gte'] = start_date
+            params['date__lte'] = today
+        elif start_date is None and end_date is not None:
+            params['date__gte'] = today
+            params['date__lte'] = end_date
+        queryset = Product.objects.filter(**params)
+        is_filtered = True
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
