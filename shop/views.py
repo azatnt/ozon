@@ -107,7 +107,7 @@ class UploadArticles(APIView):
 
 class ProductsForDriver(APIView):
     def get(self, request, id, warehouse_id):
-        warehouses = Warehouse.objects.exclude(id=id)
+        warehouses = Warehouse.objects.exclude(id=id).exclude(id=5)
         products = Product.objects.filter(warehouse_id=warehouse_id).select_related('warehouse').order_by('date')
         page = request.GET.get('page', 1)
         paginator = Paginator(products, 10)
