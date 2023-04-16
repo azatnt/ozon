@@ -42,9 +42,7 @@
                         <th>Артикул</th>
                         <th>Наименование</th>
                         <th>Кол-во</th>
-                        {% if warehouse_id != 4 %}
-                            <th>Операции</th>
-                        {% endif %}
+                        <th>Операции</th>
                     </tr>
                     </thead>
 
@@ -72,6 +70,22 @@
                                     </button>
 
                                 </td>
+                            {% elif warehouse_id == 4 %}
+                                <td>
+                                    <button
+                                            type="button"
+                                            class="btn btn-outline-success openProductModal"
+                                            data-toggle="modal"
+                                            data-target="#archiveModal-{{ product.id }}"
+                                            data-product="{{ product.id }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#archiveModal-{{ product.id }}"
+                                            id="mod"
+                                    >
+                                        Готово
+                                    </button>
+
+                                </td>
                             {% endif %}
                         </tr>
 
@@ -87,7 +101,7 @@
                                                 aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                      <form action="{% url 'archive_product_url' id=product.id warehouse_id=warehouse_id %}"
+                                      <form action="{% if warehouse_id == 4 %} {% url 'driver_product_done_url' id=product.id warehouse_id=warehouse_id %}{% else %}{% url 'archive_product_url' id=product.id warehouse_id=warehouse_id %}{% endif %}"
                                             method="POST">
                                           {% csrf_token %}
                                           <button class="btn btn-success" type="submit">

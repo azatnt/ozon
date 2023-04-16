@@ -34,7 +34,7 @@ class CheckWarehouse(APIView):
 
 class GetProductList(APIView):
     def get(self, request, id):
-        queryset = Product.objects.filter(is_archive=False).filter(warehouse_id=id).select_related('warehouse').order_by('-date')
+        queryset = Product.objects.filter(is_archive=False).filter(is_driver=False).filter(warehouse_id=id).select_related('warehouse').order_by('-date')
         warehouse_id = id
         page = request.GET.get('page', 1)
         warehouses = Warehouse.objects.exclude(id=4)
@@ -53,9 +53,18 @@ class ArchiveProduct(APIView):
     def post(self, request, id, warehouse_id):
         product = Product.objects.get(id=id)
         product.is_archive = True
+        product.is_driver = True
         product.save()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        # return redirect('get_products_url', id=warehouse_id)
+
+
+class DriverProductDone(APIView):
+    def post(self, request, id, warehouse_id):
+        product = Product.objects.get(id=id)
+        product.is_archive = True
+        product.is_driver = False
+        product.save()
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 class ArchivedProducts(APIView):
@@ -108,7 +117,7 @@ class UploadArticles(APIView):
 class ProductsForDriver(APIView):
     def get(self, request, id, warehouse_id):
         warehouses = Warehouse.objects.exclude(id=id).exclude(id=5)
-        products = Product.objects.filter(warehouse_id=warehouse_id).select_related('warehouse').order_by('date')
+        products = Product.objects.filter(warehouse_id=warehouse_id).filter(is_driver=True).select_related('warehouse').order_by('date')
         page = request.GET.get('page', 1)
         paginator = Paginator(products, 10)
         try:
